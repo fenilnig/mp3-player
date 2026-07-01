@@ -1,0 +1,23 @@
+node_modules/
+cache/
+library/
+ambient/
+*.log
+*.lnk
+*.vbs
+
+# Runtime data
+analytics.json
+daily.json
+scenes.json
+achievements.json
+library_index.json
+
+# Build helpers
+make_ico.js
+make_ico.py
+make_transparent.py
+create_shortcut.ps1
+finalize_shortcut.ps1
+pin_taskbar.ps1
+download_ambient.js

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WayneTech Audio</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@400;500;600&family=Inter:wght@400;500;600&family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+</head>
+<body class="theme-adaptive">
+    <div id="dynamic-bg" class="dynamic-bg"></div>
+    <div class="drag-bar"></div>
+    
+    <!-- Top Floating Controls -->
+    <div class="top-floating-controls">
+        <select id="session-tag" class="session-select" title="Current Activity">
+            <option value="Normal">Normal</option>
+            <option value="Editing">Editing</option>
+            <option value="Reading">Reading</option>
+            <option value="Coding">Coding</option>
+        </select>
+        <button id="analytics-btn" class="icon-btn" title="Analytics"><i class="ri-bar-chart-line"></i></button>
+        <button id="mixer-btn" class="icon-btn" title="Ambient Mixer"><i class="ri-sound-module-line"></i></button>
+        <button id="vis-3d-btn" class="icon-btn" title="Holographic 3D Visualizer"><i class="ri-box-3-line"></i></button>
+        <span id="theme-label" class="theme-label">ADAPTIVE BLUR</span>
+        <button id="theme-btn" class="icon-btn" title="Change Theme"><i class="ri-palette-line"></i></button>
+        <button id="focus-btn" class="icon-btn" title="Focus Mode"><i class="ri-focus-3-line"></i></button>
+    </div>
+
+    <div class="app-container">
+        <!-- Left Side: Player Controls -->
+        <div class="player-section">
+            <div class="bat-logo">
+                <h2>WAYNETECH</h2>
+            </div>
+            
+            <div class="album-art-container">
+                <div class="album-art">
+                    <img id="cover-image" src="" alt="Album Art" style="display: none;">
+                    <div id="cover-placeholder"><i class="ri-disc-line"></i></div>
+                </div>
+                <div class="vinyl-record">
+                    <div class="vinyl-grooves"></div>
+                    <div class="vinyl-label"></div>
+                </div>
+                <div class="vinyl-hole"></div>
+            </div>
+            
+            <div class="track-info">
+                <h1 id="track-title">SYSTEM IDLE</h1>
+                <p id="track-artist">Awaiting Data</p>
+                <div id="scene-display" class="scene-display" title="Click to edit scene association">
+                    <i class="ri-movie-2-line"></i> <span id="scene-text">Add Scene Association...</span>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <span id="current-time">0:00</span>
+                <input type="range" id="progress-bar" value="0" min="0" max="100">
+                <span id="total-time">0:00</span>
+            </div>
+
+            <div class="controls-advanced">
+                <button id="shuffle-btn" class="control-btn-small" title="Shuffle"><i class="ri-shuffle-line"></i></button>
+                <div class="controls">
+                    <button id="prev-btn" class="control-btn"><i class="ri-skip-back-fill"></i></button>
+                    <button id="play-btn" class="control-btn play-pause"><i class="ri-play-fill"></i></button>
+                    <button id="next-btn" class="control-btn"><i class="ri-skip-forward-fill"></i></button>
+                </div>
+                <button id="loop-btn" class="control-btn-small" title="Loop"><i class="ri-repeat-line"></i></button>
+                <button id="random-soundtrack-btn" class="control-btn-small" title="Random Soundtrack"><i class="ri-magic-line"></i></button>
+                <button id="eq-btn" class="control-btn-small" title="Echospin EQ Mode"><i class="ri-equalizer-fill"></i></button>
+            </div>
+
+            <div class="volume-container">
+                <i class="ri-volume-up-fill" id="volume-icon"></i>
+                <input type="range" id="volume-bar" value="100" min="0" max="100">
+            </div>
+        </div>
+
+        <!-- Right Side: Playlist -->
+        <div class="playlist-section">
+            <div class="playlist-header">
+                <h2>DATABANKS: AUDIO</h2>
+                <button id="refresh-btn" class="icon-btn" title="Rescan Library"><i class="ri-refresh-line"></i></button>
+            </div>
+            <ul id="playlist">
+                <div class="empty-state">
+                    <i class="ri-loader-4-line ri-spin"></i>
+                    <p>ACCESSING LIBRARY...</p>
+                </div>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Mixer Drawer -->
+    <div id="mixer-drawer" class="mixer-drawer">
+        <div class="mixer-header">
+            <h3>AMBIENT MIXER</h3>
+            <button id="mixer-close" class="icon-btn"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="mixer-tracks" class="mixer-tracks">
+            <!-- Sliders injected here -->
+        </div>
+    </div>
+
+    <!-- Scene Modal -->
+    <div id="scene-modal" class="modal">
+        <div class="modal-content">
+            <h3>SCENE ASSOCIATION</h3>
+            <p>What emotional scene does this song remind you of?</p>
+            <input type="text" id="scene-input" placeholder="e.g. Mr. Robot monologue" />
+            <div class="modal-actions">
+                <button id="scene-save" class="primary-btn">Save</button>
+                <button id="scene-cancel" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div id="analytics-modal" class="modal">
+        <div class="modal-content analytics-content">
+            <div class="analytics-header">
+                <h3>DATABANKS: ANALYTICS</h3>
+                <button id="analytics-close" class="icon-btn"><i class="ri-close-line"></i></button>
+            </div>
+            <div class="analytics-grid">
+                <div class="stat-card">
+                    <h4>Normal Hours</h4>
+                    <p id="stat-normal">0h</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Editing Hours</h4>
+                    <p id="stat-editing">0h</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Reading Hours</h4>
+                    <p id="stat-reading">0h</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Coding Hours</h4>
+                    <p id="stat-coding">0h</p>
+                </div>
+                <div class="stat-card">
+                    <h4>Night Listening</h4>
+                    <p id="stat-night">0h</p>
+                </div>
+                <div class="stat-card stat-wide">
+                    <h4>Most Replayed</h4>
+                    <p id="stat-replayed">None</p>
+                </div>
+                <div class="stat-card stat-wide">
+                    <h4>Most Skipped</h4>
+                    <p id="stat-skipped">None</p>
+                </div>
+                <div class="stat-card stat-wide">
+                    <h4>Longest Session</h4>
+                    <p id="stat-session">0m</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio Lab Modal -->
+    <div id="audiolab-modal" class="modal">
+        <div class="modal-content audiolab-content">
+            <div class="audiolab-header">
+                <h3>WAYNETECH AUDIO LAB</h3>
+                <div class="audiolab-controls">
+                    <label class="toggle-switch" title="Enable/Disable EQ Processing">
+                        <input type="checkbox" id="eq-enable-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <button id="audiolab-close" class="icon-btn"><i class="ri-close-line"></i></button>
+                </div>
+            </div>
+            
+            <div class="audiolab-top">
+                <div class="device-preset-row">
+                    <div class="select-group">
+                        <label>Output Device</label>
+                        <select id="audio-device-select" class="styled-select">
+                            <option value="default">System Default</option>
+                        </select>
+                    </div>
+                    <div class="select-group">
+                        <label>EQ Profile</label>
+                        <select id="eq-preset-select" class="styled-select">
+                            <option value="flat">Flat</option>
+                            <option value="bass_boost">Bass Boost</option>
+                            <option value="acoustic">Acoustic / Vocal</option>
+                            <option value="rock">Rock</option>
+                            <option value="electronic">Electronic</option>
+                            <option value="kz_castor">KZ Castor (Harman IEM)</option>
+                            <option value="saregama_carvaan">Saregama Carvaan (Vintage)</option>
+                            <option value="boat_rockerz">boAt Rockerz 425 (Mud Cut)</option>
+                            <option value="echospin">Zebronics Echospin</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="spectrum-container">
+                    <canvas id="spectrum-canvas" width="600" height="150"></canvas>
+                </div>
+            </div>
+
+            <div class="eq-bands-container">
+                <div class="eq-band preamp-band">
+                    <span class="band-gain" id="gain-val-preamp">0.0dB</span>
+                    <input type="range" class="eq-slider" id="eq-preamp" min="-12" max="12" step="0.1" value="0">
+                    <span class="band-freq">PRE</span>
+                </div>
+                <div class="eq-divider"></div>
+                <!-- 10 Bands -->
+                <div class="eq-band"><span class="band-gain" id="gain-val-0">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="0" min="-12" max="12" step="0.1" value="0"><span class="band-freq">31</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-1">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="1" min="-12" max="12" step="0.1" value="0"><span class="band-freq">63</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-2">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="2" min="-12" max="12" step="0.1" value="0"><span class="band-freq">125</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-3">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="3" min="-12" max="12" step="0.1" value="0"><span class="band-freq">250</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-4">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="4" min="-12" max="12" step="0.1" value="0"><span class="band-freq">500</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-5">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="5" min="-12" max="12" step="0.1" value="0"><span class="band-freq">1k</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-6">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="6" min="-12" max="12" step="0.1" value="0"><span class="band-freq">2k</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-7">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="7" min="-12" max="12" step="0.1" value="0"><span class="band-freq">4k</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-8">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="8" min="-12" max="12" step="0.1" value="0"><span class="band-freq">8k</span></div>
+                <div class="eq-band"><span class="band-gain" id="gain-val-9">0.0dB</span><input type="range" class="eq-slider band-slider" data-index="9" min="-12" max="12" step="0.1" value="0"><span class="band-freq">16k</span></div>
+            </div>
+            
+            <div class="audiolab-effects">
+                <label class="effect-checkbox"><input type="checkbox" id="effect-loudness"> Loudness Comp</label>
+                <label class="effect-checkbox"><input type="checkbox" id="effect-mono"> Mono Sum</label>
+                <label class="effect-checkbox"><input type="checkbox" id="effect-spatial"> Stereo Width</label>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="audio-element" crossorigin="anonymous"></audio>
+    <div id="ambient-audio-container" style="display:none;"></div>
+    
+    <div id="toast-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" async defer></script>
+    <script src="app.js"></script>
+    <script src="visualizer3d.js"></script>
+</body>
+</html>
