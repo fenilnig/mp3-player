@@ -935,33 +935,58 @@ eqBtn.addEventListener('click', () => {
     }
 });
 
+// Known Bluetooth device → EQ preset mappings
+const knownBluetoothDevices = [
+    { keywords: ['zebronics', 'echospin'], preset: 'echospin', name: 'Zebronics EchoSpin' },
+    { keywords: ['boat', 'rockerz', 'boat rockerz'], preset: 'boat_rockerz', name: 'boAt Rockerz 425' }
+];
+
+let activeBluetoothDevice = null;
+
+function detectKnownDevice(devices) {
+    const outputs = devices.filter(d => d.kind === 'audiooutput');
+    for (const known of knownBluetoothDevices) {
+        const found = outputs.find(d => 
+            known.keywords.some(kw => d.label.toLowerCase().includes(kw))
+        );
+        if (found) return known;
+    }
+    return null;
+}
+
 navigator.mediaDevices.ondevicechange = async () => {
     try {
         const devices = await navigator.mediaDevices.enumerateDevices();
-        const hasEchospin = devices.some(d => 
-            d.kind === 'audiooutput' && 
-            (d.label.toLowerCase().includes('zebronics') || d.label.toLowerCase().includes('echospin'))
-        );
+        const detected = detectKnownDevice(devices);
         
-        if (hasEchospin && !isEqEnabled) {
+        if (detected && (!activeBluetoothDevice || activeBluetoothDevice.preset !== detected.preset)) {
+            // New known device connected
+            activeBluetoothDevice = detected;
+            loadEqPreset(detected.preset);
+            document.getElementById('eq-preset-select').value = detected.preset;
             applyEqProfile(true);
-            showToast('Zebronics Echospin Connected!', 'Auto-applying custom audiophile EQ.');
-        } else if (!hasEchospin && isEqEnabled) {
+            showToast(`${detected.name} Connected!`, `Auto-applying ${detected.name} EQ profile.`);
+        } else if (!detected && activeBluetoothDevice) {
+            // Known device disconnected
+            const prevName = activeBluetoothDevice.name;
+            activeBluetoothDevice = null;
+            loadEqPreset('flat');
+            document.getElementById('eq-preset-select').value = 'flat';
             applyEqProfile(false);
-            showToast('Echospin Disconnected', 'Restoring flat audio profile.');
+            showToast(`${prevName} Disconnected`, 'Restoring flat audio profile.');
         }
     } catch (e) { console.error('Device enum error:', e); }
 };
 
-// Initial check
+// Initial check on app start
 navigator.mediaDevices.enumerateDevices().then(devices => {
-    const hasEchospin = devices.some(d => 
-        d.kind === 'audiooutput' && 
-        (d.label.toLowerCase().includes('zebronics') || d.label.toLowerCase().includes('echospin'))
-    );
-    if (hasEchospin) {
+    const detected = detectKnownDevice(devices);
+    if (detected) {
+        activeBluetoothDevice = detected;
+        loadEqPreset(detected.preset);
+        document.getElementById('eq-preset-select').value = detected.preset;
         applyEqProfile(true);
-        setTimeout(() => showToast('Zebronics Echospin Detected', 'Audiophile EQ Auto-Engaged.'), 2000);
+        setTimeout(() => showToast(`${detected.name} Detected`, `${detected.name} EQ Auto-Engaged.`), 2000);
     }
 }).catch(e => console.error(e));
 
