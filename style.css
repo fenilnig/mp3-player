@@ -848,3 +848,8 @@ input:checked + .slider:before {
 .slider.round:before {
     border-radius: 50%;
 }
+
+/* ================= 3D VISUALIZER OVERRIDES ================= */
+body.mode-3d-active .app-container { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(2px) !important; }
+body.mode-3d-active .player-section, body.mode-3d-active .playlist-section, body.mode-3d-active .glass-panel { background: rgba(0,0,0,0.2) !important; backdrop-filter: blur(4px) !important; border-color: rgba(255,255,255,0.08) !important; }
+body.mode-3d-active .album-art-container { background: rgba(0,0,0,0.4) !important; }

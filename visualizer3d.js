@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('vis-3d-btn');
+    if(!btn) return;
+    
     let isActive = false;
-    let scene, camera, renderer, terrain, particles;
+    let scene, camera, renderer, coreMesh, particles, wireframeMesh;
     let container;
-    let animationId;
+    let animationId = null;
+    let coreGeometry;
+    let originalVertices = [];
 
     // Create container
     container = document.createElement('div');
@@ -15,61 +19,79 @@ document.addEventListener('DOMContentLoaded', () => {
     container.style.height = '100vh';
     container.style.zIndex = '1'; 
     container.style.display = 'none';
-    container.style.pointerEvents = 'none'; // let clicks pass through
-    container.style.background = '#050505'; // dark background
+    container.style.pointerEvents = 'none'; 
+    container.style.background = '#020202'; 
     document.body.insertBefore(container, document.body.firstChild);
-
-    // Make app-container sit above it
-    const appContainer = document.querySelector('.app-container');
 
     function initThree() {
         scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x050505, 0.002);
+        scene.fog = new THREE.FogExp2(0x020202, 0.002);
 
         camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(0, 50, 150);
-        camera.lookAt(0, 0, 0);
+        camera.position.set(0, 0, 100);
 
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Limit pixel ratio for performance
         container.appendChild(renderer.domElement);
 
-        // Terrain
-        const geometry = new THREE.PlaneGeometry(800, 800, 64, 64);
-        // Rotate flat
-        geometry.rotateX(-Math.PI / 2);
+        // Core Sphere (Icosahedron)
+        coreGeometry = new THREE.IcosahedronGeometry(30, 2);
         
-        // Save initial Y positions
-        const positionAttribute = geometry.attributes.position;
-        geometry.userData = { initialY: [] };
-        for (let i = 0; i < positionAttribute.count; i++) {
-            geometry.userData.initialY.push(positionAttribute.getY(i));
+        // Store original vertices for audio displacement
+        const positions = coreGeometry.attributes.position;
+        for (let i = 0; i < positions.count; i++) {
+            originalVertices.push(new THREE.Vector3(positions.getX(i), positions.getY(i), positions.getZ(i)));
         }
 
-        const material = new THREE.MeshBasicMaterial({ 
-            color: 0x00ffff, 
-            wireframe: true,
+        const coreMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffffff,
+            emissive: 0x222222,
+            shininess: 100,
+            flatShading: true,
             transparent: true,
-            opacity: 0.3
+            opacity: 0.9
         });
         
-        terrain = new THREE.Mesh(geometry, material);
-        scene.add(terrain);
+        coreMesh = new THREE.Mesh(coreGeometry, coreMaterial);
+        
+        // Wireframe overlay for the core
+        const wireframeMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.2
+        });
+        wireframeMesh = new THREE.Mesh(coreGeometry, wireframeMaterial);
+        coreMesh.add(wireframeMesh);
+        
+        scene.add(coreMesh);
 
-        // Particles
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        scene.add(ambientLight);
+
+        const pointLight1 = new THREE.PointLight(0xffffff, 1, 300);
+        pointLight1.position.set(50, 50, 50);
+        scene.add(pointLight1);
+        
+        const pointLight2 = new THREE.PointLight(0xffffff, 0.5, 300);
+        pointLight2.position.set(-50, -50, -50);
+        scene.add(pointLight2);
+
+        // Particles (Starfield)
         const particleGeo = new THREE.BufferGeometry();
-        const particleCount = 1000;
+        const particleCount = 1500;
         const posArray = new Float32Array(particleCount * 3);
         for(let i=0; i < particleCount * 3; i++) {
-            posArray[i] = (Math.random() - 0.5) * 600;
+            posArray[i] = (Math.random() - 0.5) * 400;
         }
         particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
         const particleMat = new THREE.PointsMaterial({
-            size: 2,
-            color: 0xff00ff,
+            size: 1.5,
+            color: 0xffffff,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.8,
             blending: THREE.AdditiveBlending
         });
         particles = new THREE.Points(particleGeo, particleMat);
@@ -79,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onWindowResize() {
-        if (!camera || !renderer) return;
+        if (!camera || !renderer || !isActive) return;
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -91,66 +113,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update colors based on current theme accent
         const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
-        if (terrain && accentHex) {
+        if (coreMesh && accentHex) {
+            let color = new THREE.Color();
             if (accentHex.startsWith('rgb')) {
                 const rgb = accentHex.match(/\d+/g);
                 if (rgb && rgb.length === 3) {
-                    terrain.material.color.setRGB(rgb[0]/255, rgb[1]/255, rgb[2]/255);
-                    particles.material.color.setRGB(rgb[0]/255, rgb[1]/255, rgb[2]/255);
+                    color.setRGB(rgb[0]/255, rgb[1]/255, rgb[2]/255);
                 }
             } else if (accentHex.startsWith('#')) {
-                terrain.material.color.set(accentHex);
-                particles.material.color.set(accentHex);
+                color.set(accentHex);
             }
+            
+            coreMesh.material.emissive = color.clone().multiplyScalar(0.4);
+            wireframeMesh.material.color = color;
+            particles.material.color = color;
         }
 
         // Audio reactivity
+        let bass = 0, mids = 0;
         if (window.analyserNode) {
             const dataArray = new Uint8Array(window.analyserNode.frequencyBinCount);
             window.analyserNode.getByteFrequencyData(dataArray);
 
-            // Average low frequencies (bass)
-            let bass = 0;
             for(let i=0; i<10; i++) bass += dataArray[i];
             bass /= 10;
-
-            // Move terrain vertices
-            const positionAttribute = terrain.geometry.attributes.position;
-            const initials = terrain.geometry.userData.initialY;
             
-            for (let i = 0; i < positionAttribute.count; i++) {
-                const x = positionAttribute.getX(i);
-                const z = positionAttribute.getZ(i);
-                const dist = Math.sqrt(x*x + z*z);
-                
-                const bin = Math.floor(dist / 4);
-                let val = 0;
-                if (bin < dataArray.length) {
-                    val = dataArray[bin] / 255.0; 
-                }
+            for(let i=10; i<50; i++) mids += dataArray[i];
+            mids /= 40;
 
-                const time = Date.now() * 0.002;
-                const wave = Math.sin(dist * 0.05 - time) * 10;
+            const positions = coreGeometry.attributes.position;
+            const time = Date.now() * 0.002;
+            
+            // Deform sphere vertices based on audio
+            for (let i = 0; i < positions.count; i++) {
+                const orig = originalVertices[i];
+                // Math.sin adds a nice ripple effect over time
+                const displacement = ((bass / 255) * 15) + (Math.sin(time + orig.x * 0.1) * (mids / 255) * 5);
                 
-                positionAttribute.setY(i, initials[i] + wave + (val * 40));
+                const dir = orig.clone().normalize();
+                const newPos = orig.clone().add(dir.multiplyScalar(displacement));
+                
+                positions.setXYZ(i, newPos.x, newPos.y, newPos.z);
             }
-            positionAttribute.needsUpdate = true;
+            positions.needsUpdate = true;
+            coreGeometry.computeVertexNormals(); // Recalculate lighting normals
             
-            particles.rotation.y += 0.002 + (bass / 255.0) * 0.02;
-            particles.rotation.x += 0.001;
+            // Rotate based on bass
+            coreMesh.rotation.y += 0.002 + (bass / 255.0) * 0.05;
+            coreMesh.rotation.x += 0.001 + (mids / 255.0) * 0.02;
+            
+            particles.rotation.y -= 0.001 + (bass / 255.0) * 0.01;
         } else {
-            const time = Date.now() * 0.001;
-            const positionAttribute = terrain.geometry.attributes.position;
-            const initials = terrain.geometry.userData.initialY;
-            for (let i = 0; i < positionAttribute.count; i++) {
-                const x = positionAttribute.getX(i);
-                const z = positionAttribute.getZ(i);
-                const dist = Math.sqrt(x*x + z*z);
-                const wave = Math.sin(dist * 0.05 - time) * 15;
-                positionAttribute.setY(i, initials[i] + wave);
-            }
-            positionAttribute.needsUpdate = true;
-            particles.rotation.y += 0.002;
+            // Default idle animation
+            coreMesh.rotation.y += 0.002;
+            coreMesh.rotation.x += 0.001;
+            particles.rotation.y -= 0.001;
         }
 
         renderer.render(scene, camera);
@@ -158,23 +175,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btn.addEventListener('click', () => {
         isActive = !isActive;
+        
         if (isActive) {
             btn.style.color = 'var(--accent-color)';
             container.style.display = 'block';
+            document.body.classList.add('mode-3d-active');
             
-            // Make player translucent so we can see the 3D background
-            appContainer.style.background = 'rgba(0,0,0,0.3)';
-            appContainer.style.backdropFilter = 'blur(10px)';
-            appContainer.style.zIndex = '10';
-
             if (!scene) initThree();
+            // Start loop
+            if (animationId) cancelAnimationFrame(animationId);
             animate();
         } else {
+            // Clean stop
+            isActive = false;
             btn.style.color = '';
+            document.body.classList.remove('mode-3d-active');
             container.style.display = 'none';
-            appContainer.style.background = '';
-            appContainer.style.backdropFilter = '';
-            if (animationId) cancelAnimationFrame(animationId);
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
         }
     });
 });
