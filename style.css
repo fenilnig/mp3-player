@@ -9,7 +9,8 @@
     --font-heading: 'Teko', sans-serif;
     --font-body: 'Inter', sans-serif;
     --glow-effect: 0 0 20px rgba(160, 180, 255, 0.35);
-    --dynamic-rgb: 160, 180, 255; 
+    --dynamic-rgb: 160, 180, 255;
+    color-scheme: dark;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -24,6 +25,12 @@ body {
     user-select: none;
     transition: background 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+/* Global Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-color); }
 
 .drag-bar {
     position: absolute; top: 0; left: 0;
@@ -55,9 +62,10 @@ body {
 }
 
 .session-select {
-    background: transparent; border: 1px solid var(--border-color);
+    background: #111114; border: 1px solid var(--border-color);
     color: var(--text-main); padding: 4px 8px; border-radius: 4px;
     outline: none; cursor: pointer;
+    color-scheme: dark;
     transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 .session-select:hover { border-color: var(--accent-color); }
@@ -661,7 +669,7 @@ body.theme-winamp input[type=range]::-webkit-slider-thumb {
 .styled-select {
     width: 100%;
     padding: 8px 12px;
-    background: rgba(0,0,0,0.4);
+    background: #111114;
     border: 1px solid var(--border-color);
     color: var(--text-main);
     font-family: var(--font-body);
@@ -669,10 +677,15 @@ body.theme-winamp input[type=range]::-webkit-slider-thumb {
     border-radius: 4px;
     outline: none;
     cursor: pointer;
+    color-scheme: dark;
     transition: border-color 0.3s;
 }
 .styled-select:focus { border-color: var(--accent-color); }
-.styled-select option { background: var(--bg-dark); }
+.styled-select option {
+    background: #111114;
+    color: var(--text-main);
+    padding: 6px 10px;
+}
 
 .spectrum-container {
     width: 100%;
