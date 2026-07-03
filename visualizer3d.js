@@ -17,11 +17,23 @@ document.addEventListener('DOMContentLoaded', () => {
     container.style.left = '0';
     container.style.width = '100vw';
     container.style.height = '100vh';
-    container.style.zIndex = '1'; 
+    container.style.zIndex = '-1'; 
     container.style.display = 'none';
-    container.style.pointerEvents = 'none'; 
     container.style.background = '#020202'; 
     document.body.insertBefore(container, document.body.firstChild);
+
+    // Mouse interactivity
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetX = 0;
+    let targetY = 0;
+    const windowHalfX = window.innerWidth / 2;
+    const windowHalfY = window.innerHeight / 2;
+
+    document.addEventListener('mousemove', (event) => {
+        mouseX = (event.clientX - windowHalfX);
+        mouseY = (event.clientY - windowHalfY);
+    });
 
     function initThree() {
         scene = new THREE.Scene();
@@ -111,6 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isActive) return;
         animationId = requestAnimationFrame(animate);
 
+        // Smoothly interpolate target
+        targetX = mouseX * 0.05;
+        targetY = mouseY * 0.05;
+        
+        // Mouse parallax for camera
+        camera.position.x += (targetX - camera.position.x) * 0.02;
+        camera.position.y += (-targetY - camera.position.y) * 0.02;
+        camera.lookAt(scene.position);
+
         // Update colors based on current theme accent
         const accentHex = getComputedStyle(document.documentElement).getPropertyValue('--accent-color').trim();
         if (coreMesh && accentHex) {
@@ -124,22 +145,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 color.set(accentHex);
             }
             
-            coreMesh.material.emissive = color.clone().multiplyScalar(0.4);
+            coreMesh.material.emissive = color.clone().multiplyScalar(0.5);
             wireframeMesh.material.color = color;
             particles.material.color = color;
         }
 
         // Audio reactivity
-        let bass = 0, mids = 0;
+        let bass = 0, mids = 0, highs = 0;
         if (window.analyserNode) {
             const dataArray = new Uint8Array(window.analyserNode.frequencyBinCount);
             window.analyserNode.getByteFrequencyData(dataArray);
 
-            for(let i=0; i<10; i++) bass += dataArray[i];
-            bass /= 10;
+            for(let i=0; i<8; i++) bass += dataArray[i];
+            bass /= 8;
             
-            for(let i=10; i<50; i++) mids += dataArray[i];
-            mids /= 40;
+            for(let i=8; i<40; i++) mids += dataArray[i];
+            mids /= 32;
+            
+            for(let i=40; i<100; i++) highs += dataArray[i];
+            highs /= 60;
 
             const positions = coreGeometry.attributes.position;
             const time = Date.now() * 0.002;
@@ -148,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             for (let i = 0; i < positions.count; i++) {
                 const orig = originalVertices[i];
                 // Math.sin adds a nice ripple effect over time
-                const displacement = ((bass / 255) * 15) + (Math.sin(time + orig.x * 0.1) * (mids / 255) * 5);
+                const displacement = ((bass / 255) * 18) + (Math.sin(time + orig.x * 0.1) * (mids / 255) * 8);
                 
                 const dir = orig.clone().normalize();
                 const newPos = orig.clone().add(dir.multiplyScalar(displacement));
@@ -158,16 +182,23 @@ document.addEventListener('DOMContentLoaded', () => {
             positions.needsUpdate = true;
             coreGeometry.computeVertexNormals(); // Recalculate lighting normals
             
+            // Dynamic scale burst on high treble/snares
+            const scaleBurst = 1 + (highs / 255.0) * 0.15;
+            coreMesh.scale.set(scaleBurst, scaleBurst, scaleBurst);
+            
             // Rotate based on bass
             coreMesh.rotation.y += 0.002 + (bass / 255.0) * 0.05;
             coreMesh.rotation.x += 0.001 + (mids / 255.0) * 0.02;
             
-            particles.rotation.y -= 0.001 + (bass / 255.0) * 0.01;
+            particles.rotation.y -= 0.001 + (bass / 255.0) * 0.02;
+            particles.rotation.x = (targetY * 0.01);
         } else {
             // Default idle animation
             coreMesh.rotation.y += 0.002;
             coreMesh.rotation.x += 0.001;
             particles.rotation.y -= 0.001;
+            
+            coreMesh.scale.set(1, 1, 1);
         }
 
         renderer.render(scene, camera);
