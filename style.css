@@ -850,6 +850,61 @@ input:checked + .slider:before {
 }
 
 /* ================= 3D VISUALIZER OVERRIDES ================= */
-body.mode-3d-active .app-container { background: rgba(0,0,0,0.15) !important; backdrop-filter: blur(2px) !important; }
-body.mode-3d-active .player-section, body.mode-3d-active .playlist-section, body.mode-3d-active .glass-panel { background: rgba(0,0,0,0.2) !important; backdrop-filter: blur(4px) !important; border-color: rgba(255,255,255,0.08) !important; }
-body.mode-3d-active .album-art-container { background: rgba(0,0,0,0.4) !important; }
+body.mode-3d-active .app-container {
+    display: none !important;
+}
+
+body.mode-3d-active .top-floating-controls {
+    display: none !important;
+}
+
+.vis-controls-overlay {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 10, 12, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    padding: 10px 25px;
+    display: none;
+    align-items: center;
+    gap: 20px;
+    z-index: 100;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+}
+
+.vis-controls-overlay:hover, .vis-controls-overlay.active {
+    opacity: 1;
+}
+
+body.mode-3d-active .vis-controls-overlay {
+    display: flex;
+}
+
+.vis-controls-overlay button {
+    background: none;
+    border: none;
+    color: var(--text-main);
+    font-size: 24px;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.vis-controls-overlay button:hover {
+    color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.vis-style-select {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-main);
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    cursor: pointer;
+}

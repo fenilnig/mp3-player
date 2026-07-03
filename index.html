@@ -237,6 +237,21 @@
     
     <div id="toast-container"></div>
 
+    <!-- 3D Visualizer Dedicated Mode Controls -->
+    <div class="vis-controls-overlay" id="vis-controls">
+        <button id="vis-prev" title="Previous"><i class="ri-skip-back-fill"></i></button>
+        <button id="vis-playpause" title="Play/Pause"><i class="ri-pause-circle-fill"></i></button>
+        <button id="vis-next" title="Next"><i class="ri-skip-forward-fill"></i></button>
+        
+        <select id="vis-style-selector" class="vis-style-select">
+            <option value="sphere">Pulse Sphere</option>
+            <option value="bars">Frequency Bars</option>
+            <option value="waves">Terrain Waves</option>
+        </select>
+        
+        <button id="vis-exit" title="Exit Visualizer Mode"><i class="ri-close-circle-line"></i></button>
+    </div>
+
     <script src="three.min.js" defer></script>
     <script src="app.js"></script>
     <script src="visualizer3d.js"></script>
