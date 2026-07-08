@@ -9,11 +9,13 @@ function hashString(str) {
 
 let isQuiting = false;
 
+const basePath = app.isPackaged ? path.join(process.resourcesPath, '..') : path.join(__dirname, '..');
+
 function createWindow() {
     const win = new BrowserWindow({
         width: 1100,
         height: 750,
-        icon: path.join(__dirname, 'icon_transparent.png'),
+        icon: path.join(__dirname, 'assets', 'icon_transparent.png'),
         backgroundColor: '#0a0a0a',
         titleBarStyle: 'hidden',
         titleBarOverlay: { color: 'rgba(0,0,0,0)', symbolColor: '#a0b4ff' },
@@ -44,7 +46,7 @@ function createWindow() {
         }
     });
     
-    win.loadFile('index.html');
+    win.loadFile(path.join(__dirname, 'index.html'));
 }
 
 app.whenReady().then(() => {
@@ -56,7 +58,7 @@ app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(
 
 // File Readers
 ipcMain.handle('get-library-files', async () => {
-    const p = path.join(__dirname, 'library');
+    const p = path.join(basePath, 'library');
     if (!fs.existsSync(p)) fs.mkdirSync(p);
     try {
         const files = fs.readdirSync(p);
@@ -66,7 +68,7 @@ ipcMain.handle('get-library-files', async () => {
 });
 
 ipcMain.handle('get-ambient-files', async () => {
-    const p = path.join(__dirname, 'ambient');
+    const p = path.join(basePath, 'ambient');
     if (!fs.existsSync(p)) fs.mkdirSync(p);
     try {
         const files = fs.readdirSync(p);
@@ -77,13 +79,13 @@ ipcMain.handle('get-ambient-files', async () => {
 
 // JSON Readers
 const readJson = (file) => {
-    const p = path.join(__dirname, file);
+    const p = path.join(basePath, file);
     if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'));
     return {};
 };
 
 const writeJson = (file, data) => {
-    const p = path.join(__dirname, file);
+    const p = path.join(basePath, file);
     fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
 };
 
@@ -120,8 +122,8 @@ ipcMain.handle('save-audiolab', (e, data) => {
 });
 
 ipcMain.handle('scan-library', async (e) => {
-    const libraryPath = path.join(__dirname, 'library');
-    const cachePath = path.join(__dirname, 'cache');
+    const libraryPath = path.join(basePath, 'library');
+    const cachePath = path.join(basePath, 'cache');
     const artworkPath = path.join(cachePath, 'artwork');
     
     if (!fs.existsSync(cachePath)) fs.mkdirSync(cachePath);
