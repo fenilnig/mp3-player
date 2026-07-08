@@ -12,8 +12,7 @@
   "type": "commonjs",
   "devDependencies": {
     "electron": "^43.0.0",
-    "electron-packager": "^17.1.2",
-    "png-to-ico": "^3.0.1"
+    "electron-packager": "^17.1.2"
   },
   "dependencies": {
     "colorthief": "^3.3.1",
