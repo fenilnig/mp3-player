@@ -845,7 +845,7 @@ async function extractMetadata(fileUrl, index) {
 
         // Load artwork from cache - use relative path from index.html directory
         // Add cache-buster to prevent stale 404 caching
-        const artRelPath = 'cache/artwork/' + track.albumId + '.jpg?' + Date.now();
+        const artRelPath = '../cache/artwork/' + track.albumId + '.jpg?' + Date.now();
         console.log('[ART] Loading artwork for "' + track.title + '" albumId=' + track.albumId);
         console.log('[ART] Relative path:', artRelPath);
         
