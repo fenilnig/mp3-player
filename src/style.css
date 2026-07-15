@@ -85,8 +85,10 @@ body {
     border-right: 1px solid var(--border-color);
     box-shadow: inset -10px 0 20px rgba(0,0,0,0.5);
     position: relative; padding-top: 90px;
+    overflow-y: auto; overflow-x: hidden; scrollbar-width: none;
     transition: background 0.8s cubic-bezier(0.22, 1, 0.36, 1), width 0.8s cubic-bezier(0.22, 1, 0.36, 1), border 0.8s;
 }
+.player-section::-webkit-scrollbar { display: none; }
 
 .bat-logo { position: absolute; top: 20px; left: 20px; transition: opacity 0.5s; }
 .bat-logo h2 {
@@ -880,8 +882,11 @@ body.mode-3d-active .top-floating-controls {
     opacity: 1;
 }
 
-body.mode-3d-active .vis-controls-overlay {
-    display: flex;
+body.mode-3d-active .vis-controls-overlay, body.mode-3d-active #vis-controls {
+    display: flex !important;
+}
+#vis-controls {
+    display: none !important;
 }
 
 .vis-controls-overlay button {
